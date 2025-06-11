@@ -23,6 +23,16 @@ class WorkoutController extends Controller
             $query->where('is_active', $request->boolean('is_active'));
         }
 
+        // Search by title
+        if ($request->filled('title')) {
+            $query->where('title', 'like', '%' . $request->title . '%');
+        }
+
+        // Search by trainer
+        if ($request->filled('trainer')) {
+            $query->where('trainer', 'like', '%' . $request->trainer . '%');
+        }
+
         // Sort by date
         if ($request->has('sort') && $request->get('sort') === 'date') {
             $query->orderBy('date');
