@@ -3,7 +3,8 @@
 namespace App\Livewire\Workouts;
 
 use Livewire\Component;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Auth;
+use App\Models\Workout;
 
 class Create extends Component
 {
@@ -27,7 +28,7 @@ class Create extends Component
 
     public function mount()
     {
-        if (!session('api_token')) {
+        if (!Auth::check()) {
             return redirect()->route('login');
         }
     }
@@ -40,21 +41,15 @@ class Create extends Component
 
         $validated = $this->validate();
 
-        $token = session('api_token');
         try {
-            $response = Http::withToken($token)->post(url('/api/workouts'), $validated);
-            if ($response->successful()) {
-                $this->success = true;
-                $this->reset(['title', 'description', 'trainer', 'date', 'slots', 'is_active']);
-                $this->dispatch('redirectToList');
-                return;
-            } elseif ($response->status() === 422) {
-                $this->apiErrors = $response->json('errors');
-            } else {
-                $this->addError('form', 'Failed to add workout.');
-            }
+            $workout = Workout::create(array_merge($validated, [
+                'user_id' => Auth::id(),
+            ]));
+            $this->success = true;
+            $this->reset(['title', 'description', 'trainer', 'date', 'slots', 'is_active']);
+            $this->dispatch('redirectToList');
         } catch (\Exception $e) {
-            $this->addError('form', 'Server error.');
+            $this->addError('form', 'Server error: ' . $e->getMessage());
         }
     }
 

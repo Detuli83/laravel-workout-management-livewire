@@ -3,7 +3,8 @@
 namespace App\Livewire\Auth;
 
 use Livewire\Component;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class Register extends Component
 {
@@ -22,23 +23,26 @@ class Register extends Component
     {
         $this->resetErrorBag();
         $this->apiErrors = [];
+        // Validate input
+        $validated = $this->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|confirmed|min:6',
+        ]);
+
         try {
-            $response = Http::post(url('/api/register'), [
+            Log::info('Livewire direct register attempt', ['email' => $this->email]);
+            $user = \App\Models\User::create([
                 'name' => $this->name,
                 'email' => $this->email,
-                'password' => $this->password,
-                'password_confirmation' => $this->password_confirmation,
+                'password' => bcrypt($this->password),
             ]);
-            if ($response->successful()) {
-                session(['api_token' => $response['access_token']]);
-                return redirect()->route('workouts.index');
-            } elseif ($response->status() === 422) {
-                $this->apiErrors = $response->json('errors');
-            } else {
-                $this->addError('form', 'Registration failed.');
-            }
+            Log::info('Livewire register success', ['id' => $user->id]);
+            Auth::login($user);
+            return redirect()->route('workouts.index');
         } catch (\Exception $e) {
-            $this->addError('form', 'Server error.');
+            Log::error('Livewire register error', ['error' => $e->getMessage()]);
+            $this->addError('form', 'Registration failed: ' . $e->getMessage());
         }
     }
 }

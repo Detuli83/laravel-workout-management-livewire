@@ -3,17 +3,15 @@
 namespace App\Livewire\Auth;
 
 use Livewire\Component;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Auth;
 
 class Logout extends Component
 {
     public function logout()
     {
-        $token = session('api_token');
-        if ($token) {
-            Http::withToken($token)->post(url('/api/logout'));
-        }
-        session()->forget('api_token');
+        Auth::logout();
+        session()->invalidate();
+        session()->regenerateToken();
         return redirect()->route('login');
     }
 

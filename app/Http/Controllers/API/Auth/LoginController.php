@@ -10,9 +10,15 @@ class LoginController extends Controller
 {
     public function login(Request $request)
     {
-        $credentials = $request->validate([
+        \Log::info('Login API called');
+
+      $credentials = $request->validate([
             'email' => 'required|email',
             'password' => 'required',
+        ]);
+
+        \Log::info('Login API called', [
+            'email' => $request
         ]);
 
         if (!Auth::attempt($credentials)) {

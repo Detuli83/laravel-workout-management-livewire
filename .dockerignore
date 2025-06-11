@@ -1,0 +1,26 @@
+# Ignore environment files
+.env
+
+# Ignore dependencies
+node_modules
+vendor
+
+# Ignore git and editor files
+.git
+.gitignore
+*.log
+.idea
+.vscode
+.DS_Store
+
+# Ignore test and coverage files
+coverage
+phpunit.xml
+
+# Ignore OS generated files
+Thumbs.db
+
+# Ignore SQLite database
+*.sqlite
+*.sqlite3
+/database/database.sqlite

@@ -15,7 +15,7 @@
             <div class="space-x-4">
                 <a href="/workouts" class="text-gray-700 hover:text-blue-700">Workouts</a>
                 <a href="/workouts/create" class="text-gray-700 hover:text-blue-700">Add Workout</a>
-                @if(session('api_token'))
+                @if(Auth::check())
                     <form id="logout-form" action="/logout" method="POST" class="inline">
                         @csrf
                         <button type="submit" class="text-red-600 hover:text-red-800">Logout</button>

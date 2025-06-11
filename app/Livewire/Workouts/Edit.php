@@ -3,8 +3,8 @@
 namespace App\Livewire\Workouts;
 
 use Livewire\Component;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Request as FacadeRequest;
+use Illuminate\Support\Facades\Auth;
+use App\Models\Workout;
 
 class Edit extends Component
 {
@@ -28,20 +28,18 @@ class Edit extends Component
 
     public function mount($id)
     {
-        if (!session('api_token')) {
+        if (!Auth::check()) {
             return redirect()->route('login');
         }
         $this->workoutId = $id;
-        $token = session('api_token');
-        $response = Http::withToken($token)->get(url("/api/workouts/{$id}"));
-        if ($response->successful()) {
-            $data = $response->json('data');
-            $this->title = $data['title'] ?? '';
-            $this->description = $data['description'] ?? '';
-            $this->trainer = $data['trainer'] ?? '';
-            $this->date = $data['date'] ?? '';
-            $this->slots = $data['slots'] ?? '';
-            $this->is_active = (bool) ($data['is_active'] ?? true);
+        $workout = Workout::where('id', $id)->where('user_id', Auth::id())->first();
+        if ($workout) {
+            $this->title = $workout->title;
+            $this->description = $workout->description;
+            $this->trainer = $workout->trainer;
+            $this->date = $workout->date;
+            $this->slots = $workout->slots;
+            $this->is_active = (bool) $workout->is_active;
         }
     }
 
@@ -53,20 +51,17 @@ class Edit extends Component
 
         $validated = $this->validate();
 
-        $token = session('api_token');
         try {
-            $response = Http::withToken($token)->put(url("/api/workouts/{$this->workoutId}"), $validated);
-            if ($response->successful()) {
+            $workout = Workout::where('id', $this->workoutId)->where('user_id', Auth::id())->first();
+            if ($workout) {
+                $workout->update($validated);
                 $this->success = true;
                 $this->dispatch('redirectToList');
-                return;
-            } elseif ($response->status() === 422) {
-                $this->apiErrors = $response->json('errors');
             } else {
-                $this->addError('form', 'Failed to update workout.');
+                $this->addError('form', 'Workout not found or unauthorized.');
             }
         } catch (\Exception $e) {
-            $this->addError('form', 'Server error.');
+            $this->addError('form', 'Server error: ' . $e->getMessage());
         }
     }
 

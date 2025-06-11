@@ -3,7 +3,8 @@
 namespace App\Livewire\Auth;
 
 use Livewire\Component;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class Login extends Component
 {
@@ -15,20 +16,24 @@ class Login extends Component
     {
         $this->resetErrorBag();
         $this->apiErrors = [];
+        // Validate input
+        $validated = $this->validate([
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
+
         try {
-            $response = Http::post(url('/api/login'), [
-                'email' => $this->email,
-                'password' => $this->password,
-            ]);
-            if ($response->successful()) {
-                session(['api_token' => $response['access_token']]);
+            Log::info('Livewire direct login attempt', ['email' => $this->email]);
+            if (Auth::attempt(['email' => $this->email, 'password' => $this->password])) {
+                session()->regenerate();
+                Log::info('Livewire login success', ['email' => $this->email]);
                 return redirect()->route('workouts.index');
-            } elseif ($response->status() === 422 || $response->status() === 401) {
-                $this->apiErrors = $response->json('errors') ?? ['form' => [$response->json('message')]];
             } else {
-                $this->addError('form', 'Login failed.');
+                Log::warning('Livewire login failed', ['email' => $this->email]);
+                $this->addError('form', 'Invalid credentials.');
             }
         } catch (\Exception $e) {
+            Log::error('Livewire login error', ['error' => $e->getMessage()]);
             $this->addError('form', 'Server error.');
         }
     }

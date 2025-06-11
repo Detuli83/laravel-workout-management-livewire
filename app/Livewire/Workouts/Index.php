@@ -3,7 +3,8 @@
 namespace App\Livewire\Workouts;
 
 use Livewire\Component;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Auth;
+use App\Models\Workout;
 
 class Index extends Component
 {
@@ -14,7 +15,7 @@ class Index extends Component
 
     public function mount()
     {
-        if (!session('api_token')) {
+        if (!Auth::check()) {
             return redirect()->route('login');
         }
         $this->fetchWorkouts();
@@ -22,29 +23,25 @@ class Index extends Component
 
     public function fetchWorkouts()
     {
-        $token = session('api_token');
-        if (!$token) {
+        if (!Auth::check()) {
             return redirect()->route('login');
         }
-        $query = [];
+        $query = Workout::where('user_id', Auth::id());
         if ($this->search) {
-            $query['title'] = $this->search;
+            $query->where('title', 'like', '%'.$this->search.'%');
         }
         if ($this->trainer) {
-            $query['trainer'] = $this->trainer;
+            $query->where('trainer', 'like', '%'.$this->trainer.'%');
         }
-        $response = Http::withToken($token)->get(url('/api/workouts'), $query);
-        if ($response->successful()) {
-            $this->workouts = $response->json('data');
-        } else {
-            $this->workouts = [];
-        }
+        $this->workouts = $query->get();
     }
 
     public function deleteWorkout($id)
     {
-        $token = session('api_token');
-        $response = Http::withToken($token)->delete(url("/api/workouts/{$id}"));
+        $workout = Workout::where('id', $id)->where('user_id', Auth::id())->first();
+        if ($workout) {
+            $workout->delete();
+        }
         $this->fetchWorkouts();
     }
 
