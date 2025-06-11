@@ -16,6 +16,15 @@ class Edit extends Component
     public $slots = '';
     public $is_active = true;
     public $apiErrors = [];
+    protected $rules = [
+        'title' => 'required|string|max:255',
+        'description' => 'required|string',
+        'trainer' => 'required|string|max:255',
+        'date' => 'required|date',
+        'slots' => 'required|integer|min:1',
+        'is_active' => 'boolean',
+    ];
+    public $success = false;
 
     public function mount($id)
     {
@@ -29,7 +38,7 @@ class Edit extends Component
             $this->trainer = $data['trainer'] ?? '';
             $this->date = $data['date'] ?? '';
             $this->slots = $data['slots'] ?? '';
-            $this->is_active = $data['is_active'] ?? true;
+            $this->is_active = (bool) ($data['is_active'] ?? true);
         }
     }
 
@@ -37,18 +46,17 @@ class Edit extends Component
     {
         $this->resetErrorBag();
         $this->apiErrors = [];
+        $this->success = false;
+
+        $validated = $this->validate();
+
         $token = session('api_token');
         try {
-            $response = Http::withToken($token)->put(url("/api/workouts/{$this->workoutId}"), [
-                'title' => $this->title,
-                'description' => $this->description,
-                'trainer' => $this->trainer,
-                'date' => $this->date,
-                'slots' => $this->slots,
-                'is_active' => $this->is_active,
-            ]);
+            $response = Http::withToken($token)->put(url("/api/workouts/{$this->workoutId}"), $validated);
             if ($response->successful()) {
-                return redirect()->route('workouts.index');
+                $this->success = true;
+                $this->dispatch('redirectToList');
+                return;
             } elseif ($response->status() === 422) {
                 $this->apiErrors = $response->json('errors');
             } else {

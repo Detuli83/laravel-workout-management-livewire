@@ -3,10 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <title>Workout Manager</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.2/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
     @livewireStyles
 </head>
 <body class="bg-gray-100">
+    <nav class="bg-white shadow mb-8">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="font-bold text-xl text-blue-700">
+                <a href="/">Workout Manager</a>
+            </div>
+            <div class="space-x-4">
+                <a href="/workouts" class="text-gray-700 hover:text-blue-700">Workouts</a>
+                <a href="/workouts/create" class="text-gray-700 hover:text-blue-700">Add Workout</a>
+                @if(session('api_token'))
+                    <form id="logout-form" action="/logout" method="POST" class="inline">
+                        @csrf
+                        <button type="button" onclick="logoutUser()" class="text-red-600 hover:text-red-800">Logout</button>
+                    </form>
+                    <script>
+                        function logoutUser() {
+                            fetch('/logout', { method: 'POST', headers: { 'X-CSRF-TOKEN': document.querySelector('input[name=_token]').value } })
+                                .then(() => window.location.href = '/login');
+                        }
+                    </script>
+                @else
+                    <a href="/login" class="text-gray-700 hover:text-blue-700">Login</a>
+                    <a href="/register" class="text-gray-700 hover:text-blue-700">Register</a>
+                @endif
+            </div>
+        </div>
+    </nav>
     <div class="min-h-screen flex flex-col">
         {{ $slot }}
     </div>

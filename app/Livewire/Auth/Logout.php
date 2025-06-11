@@ -19,6 +19,6 @@ class Logout extends Component
 
     public function render()
     {
-        return view('livewire.auth.logout');
+        return view('livewire.auth.logout')->layout('components.layouts.auth');
     }
 }
