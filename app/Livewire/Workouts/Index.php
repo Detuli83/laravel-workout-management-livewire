@@ -14,6 +14,9 @@ class Index extends Component
 
     public function mount()
     {
+        if (!session('api_token')) {
+            return redirect()->route('login');
+        }
         $this->fetchWorkouts();
     }
 

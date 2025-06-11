@@ -25,6 +25,13 @@ class Create extends Component
         'is_active' => 'boolean',
     ];
 
+    public function mount()
+    {
+        if (!session('api_token')) {
+            return redirect()->route('login');
+        }
+    }
+
     public function createWorkout()
     {
         $this->resetErrorBag();

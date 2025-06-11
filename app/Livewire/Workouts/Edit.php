@@ -28,6 +28,9 @@ class Edit extends Component
 
     public function mount($id)
     {
+        if (!session('api_token')) {
+            return redirect()->route('login');
+        }
         $this->workoutId = $id;
         $token = session('api_token');
         $response = Http::withToken($token)->get(url("/api/workouts/{$id}"));

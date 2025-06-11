@@ -18,14 +18,8 @@
                 @if(session('api_token'))
                     <form id="logout-form" action="/logout" method="POST" class="inline">
                         @csrf
-                        <button type="button" onclick="logoutUser()" class="text-red-600 hover:text-red-800">Logout</button>
+                        <button type="submit" class="text-red-600 hover:text-red-800">Logout</button>
                     </form>
-                    <script>
-                        function logoutUser() {
-                            fetch('/logout', { method: 'POST', headers: { 'X-CSRF-TOKEN': document.querySelector('input[name=_token]').value } })
-                                .then(() => window.location.href = '/login');
-                        }
-                    </script>
                 @else
                     <a href="/login" class="text-gray-700 hover:text-blue-700">Login</a>
                     <a href="/register" class="text-gray-700 hover:text-blue-700">Register</a>

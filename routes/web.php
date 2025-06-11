@@ -16,3 +16,8 @@ Route::get('/logout', Logout::class)->name('logout');
 Route::get('/workouts', WorkoutsIndex::class)->name('workouts.index');
 Route::get('/workouts/create', WorkoutsCreate::class)->name('workouts.create');
 Route::get('/workouts/{id}/edit', WorkoutsEdit::class)->name('workouts.edit');
+
+Route::post('/logout', function () {
+    session()->forget('api_token');
+    return redirect('/login');
+})->name('logout');
